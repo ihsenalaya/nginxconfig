@@ -1,0 +1,57 @@
+#!/bin/bash
+
+# Mettre à jour le système
+echo "Mise à jour du système..."
+sudo apt update && sudo apt upgrade -y
+
+# Installer Nginx
+echo "Installation de Nginx..."
+sudo apt install nginx -y
+
+# Démarrer et activer Nginx
+echo "Démarrage de Nginx..."
+sudo systemctl start nginx
+sudo systemctl enable nginx
+
+# Configurer le pare-feu
+echo "Configuration du pare-feu..."
+sudo ufw allow 'Nginx Full'
+
+# Créer un fichier de configuration de site
+echo "Création de la configuration de site..."
+SITE_CONFIG="/etc/nginx/sites-available/mon_site"
+sudo bash -c "cat > $SITE_CONFIG" <<EOF
+server {
+    listen 80;
+    server_name 23.96.87.122 23.96.87.122;
+
+    root /var/www/mon_site;
+    index index.html index.htm;
+
+    location / {
+        try_files \$uri \$uri/ =404;
+    }
+}
+EOF
+
+# Activer le site
+echo "Activation du site..."
+sudo ln -s $SITE_CONFIG /etc/nginx/sites-enabled/
+
+# Créer le répertoire du site
+echo "Création du répertoire pour le site..."
+sudo mkdir -p /var/www/mon_site
+
+# Ajouter un fichier index.html
+echo "Création de index.html..."
+echo "<h1>Bienvenue sur mon site Nginx!</h1>" | sudo tee /var/www/mon_site/index.html
+
+# Tester la configuration
+echo "Test de la configuration Nginx..."
+sudo nginx -t
+
+# Recharger Nginx
+echo "Rechargement de Nginx..."
+sudo systemctl reload nginx
+
+echo "Installation et configuration de Nginx terminées!"
